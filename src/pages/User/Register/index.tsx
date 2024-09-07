@@ -1,12 +1,11 @@
 import { Footer } from '@/components';
-import { getLoginUserUsingGet, userLoginUsingPost } from '@/services/lianchi-bi/userController';
+import { userRegisterUsingPost } from '@/services/lianchi-bi/userController';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { LoginForm, ProFormText } from '@ant-design/pro-components';
-import { Helmet, history, Link, SelectLang, useIntl, useModel } from '@umijs/max';
+import { Helmet, history, Link, SelectLang, useIntl } from '@umijs/max';
 import { message, Tabs } from 'antd';
 import { createStyles } from 'antd-style';
 import React, { useState } from 'react';
-import { flushSync } from 'react-dom';
 import Settings from '../../../../config/defaultSettings';
 
 const useStyles = createStyles(({ token }) => {
@@ -55,36 +54,18 @@ const Lang = () => {
   );
 };
 
-const Login: React.FC = () => {
+const Register: React.FC = () => {
   const [type, setType] = useState<string>('account');
-  const { setInitialState } = useModel('@@initialState');
   const { styles } = useStyles();
   const intl = useIntl();
 
-  /**
-   * 登录成功后，获取用户登录信息
-   */
-  const fetchUserInfo = async () => {
-    const userInfo = await getLoginUserUsingGet();
-    if (userInfo) {
-      flushSync(() => {
-        // @ts-ignore
-        setInitialState((s) => ({
-          ...s,
-          currentUser: userInfo,
-        }));
-      });
-    }
-  };
-
   const handleSubmit = async (values: API.UserLoginRequest) => {
     try {
-      // 登录
-      const res = await userLoginUsingPost(values);
+      // 注册
+      const res = await userRegisterUsingPost(values);
       if (res.code === 0) {
-        const defaultLoginSuccessMessage = '登录成功';
+        const defaultLoginSuccessMessage = '注册成功';
         message.success(defaultLoginSuccessMessage);
-        await fetchUserInfo();
         const urlParams = new URL(window.location.href).searchParams;
         history.push(urlParams.get('redirect') || '/');
         return;
@@ -92,7 +73,7 @@ const Login: React.FC = () => {
         message.error(res.message);
       }
     } catch (error) {
-      const defaultLoginFailureMessage = '登录失败';
+      const defaultLoginFailureMessage = '注册失败';
       console.log(error);
       message.error(defaultLoginFailureMessage);
     }
@@ -103,8 +84,8 @@ const Login: React.FC = () => {
       <Helmet>
         <title>
           {intl.formatMessage({
-            id: 'menu.login',
-            defaultMessage: '登录页',
+            id: 'menu.register',
+            defaultMessage: '注册页',
           })}
           - {Settings.title}
         </title>
@@ -117,6 +98,11 @@ const Login: React.FC = () => {
         }}
       >
         <LoginForm
+          submitter={{
+            searchConfig: {
+              submitText: '注册',
+            },
+          }}
           contentStyle={{
             minWidth: 280,
             maxWidth: '75vw',
@@ -125,7 +111,7 @@ const Login: React.FC = () => {
           title="莲池智能 BI"
           subTitle="让不会数据分析的同学也能通过输入目标快速完成数据分析。"
           onFinish={async (values) => {
-            await handleSubmit(values as API.UserLoginRequest);
+            await handleSubmit(values as API.UserRegisterRequest);
           }}
         >
           <Tabs
@@ -137,7 +123,7 @@ const Login: React.FC = () => {
                 key: 'account',
                 label: intl.formatMessage({
                   id: 'pages.login.accountLogin.tab',
-                  defaultMessage: '账户密码登录',
+                  defaultMessage: '用户注册',
                 }),
               },
             ]}
@@ -173,6 +159,20 @@ const Login: React.FC = () => {
                   },
                 ]}
               />
+              <ProFormText.Password
+                name="checkPassword"
+                fieldProps={{
+                  size: 'large',
+                  prefix: <LockOutlined />,
+                }}
+                placeholder={'请再次输入密码'}
+                rules={[
+                  {
+                    required: true,
+                    message: '密码是必填项',
+                  },
+                ]}
+              />
             </>
           )}
 
@@ -181,7 +181,7 @@ const Login: React.FC = () => {
               marginBottom: 24,
             }}
           >
-            <Link to={'/user/register'}>注册</Link>
+            <Link to={'/user/login'}>登录</Link>
           </div>
         </LoginForm>
       </div>
@@ -190,4 +190,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default Register;
