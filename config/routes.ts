@@ -51,14 +51,14 @@ export default [
     ],
   },
   {
-    name: 'list.table-list',
-    icon: 'table',
-    path: '/list',
-    component: './TableList',
+    path: '/',
+    redirect: '/add_chart',
   },
   {
-    path: '/',
-    redirect: '/welcome',
+    path: '/add_chart',
+    name: '智能分析',
+    component: './AddChart',
+    icon: 'barChart',
   },
   {
     path: '*',
